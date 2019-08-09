@@ -1,0 +1,263 @@
+---
+title: "**Segundo Turno e o Comparecimento Eleitoral**"
+author: "**Caio Rios**"
+date: "2019"
+output: pdf_document
+header-includes:
+    - \usepackage{setspace}\onehalfspacing
+abstract: "Qual o efeito de eleições disputadas em dois turnos no comparecimento eleitoral? Como essa instituição interage com a competição eleitoral para incentivar os eleitores a votar? Esse artigo sugere uma nova variável explicativa para o fenômeno do turnout. Um dos achados mais robustos na literatura do comparecimento é que competição causa maiores taxas de eleitores votantes. Isso acontece porque em eleições competitivas, o indivíduo tem a sensação de que seu voto pode fazer a diferença, isto é, que ele pode ser um eleitor pivotal. Em eleições que podem ir ao segundo turno, mesmo que os dois candidatos mais votados estejam quase empatados nas pesquisas eleitorais, o eleitor pode pensar que seu voto não fará diferença pois a eleição será decidida em um segundo turno, o que, por sua vez, causaria abstenção. A primeira hipótese testada nesse artigo é que eleições de dois turnos causa uma queda nas taxas de comparecimento. A segunda e principal hipótese testa o efeito interativo de eleições em dois turnos e competição eleitor no comparecimento. Espera-se que o efeito da competição se torne insignificante em eleições que podem ser resolvidas no segundo turno. O método de mínimos quadrados (OLS) foi utilizado para testar as hipóteses. Como esperado, o efeito da competição, que outrora foi robusto e significante, tornou-se estatisticamente insignificante quando interagida com eleições em dois turnos."
+fontsize: 12pt
+geometry: margin=1.5in
+csl: associacao-brasileira-de-normas-tecnicas-ufrgs.csl
+bibliography: Referencias.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if(require(ggplot2) == F) install.packages(ggplot2); require(ggplot2)
+if(require(ggrepel) == F) install.packages(ggrepel); require(ggrepel)
+if(require(readxl) == F) install.packages(readxl); require(readxl)
+if(require(tidyr) == F) install.packages(tidyr); require(tidyr)
+if(require(tidyverse) == F) install.packages(tidyverse); require(tidyverse)
+if(require(magrittr) == F) install.packages(magrittr); require(magrittr)
+if(require(ggalt) == F) install.packages(ggalt); require(ggalt)
+if(require(jtools) == F) install.packages("jtools"); require(jtools)
+if(require(lmtest) == F) install.packages("lmtest"); require(lmtest)
+if(require(knitr) == F) install.packages("knitr"); require(knitr)
+if(require(sandwich) == F) install.packages("sandwich"); require(sandwich)
+theme_set(theme_classic())
+options(scipen=999)
+```
+
+\newpage
+
+## **Introdução**[^1]
+
+Um dos pré-requisitos básicos de uma democracia é a participação popular. A natureza desta - como, de fato, o povo participa - é alvo de grande debate na literatura [@jackman_political_1987]. Uma das vertentes da teoria democrática, qual seja, a teoria elitista da democracia, mostra que o papel do cidadão como eleitor é, simplesmente votar [@schumpeter_capitalism_1924]. Participação democrática passa a ser o comparecimento às urnas, que por meio desta, os eleitores podem escolher seus representantes no governo. Esta é uma maneira limitada de definir participação política [@teorell_political_2006], mas, ainda assim, é largamente utilizada na literatura. Dahl (1971), por exemplo, inclui em seu modelo duas categorias para definir o quão democrático são os países, quais sejam, inclusão e contestação. Inclusão refere-se a abertura das eleições, isto é, quanto maior a participação popular, mais democrático seria o país.
+Devido à importância das eleições na democracia, sendo ela, um dos principais meios do cidadão participar, surge um grande debate na Ciência Política acerca dos determinantes que levam o indivíduo a comparecer nas eleições. Por que os eleitores saem de casa para votar? Por que a taxa de comparecimento às eleições varia de lugar para lugar? As instituições importam para explicar tal variação? Essas perguntas são frequentes na literatura e suas respostas são controversas [@blais_what_2006-1].
+As explicações do comparecimento (turnout) às eleições giram em torno de dois pilares, são eles, o comportamental e o institucional [@jackman_voter_1995]. A principal diferença entre essas abordagens é a pergunta que as norteiam. Os comportamentalistas tentam responder a seguinte questão: por que o eleitor vota? A resposta, naturalmente, deve remeter ao nível do indivíduo. Por outro lado, os institucionalistas buscam entender o porquê o comparecimento varia de país para país, o que leva a abordagens estruturais. Este artigo se debruça sobre o segundo pilar – isto é, o institucional – para explicar o comparecimento eleitoral. Instituições funcionam como incentivos que geram diferentes tipos de comportamento nos eleitores. Diversas instituições aparentam afetar e, por sua vez, explicar variações no comparecimento às urnas [@powell_american_1986]. Voto Compulsório [@blais_why_2003; @cepaluni_compulsory_2016; @jackman_political_1987], Sistemas Eleitorais [@jackman_political_1987] e Unicameralismo [@jackman_political_1987; @jackman_voter_1995] são as instituições que mais aparecem na literatura [@blais_what_2006-1].
+Este artigo contribui para essa literatura propondo uma nova variável institucional que pode dar incentivos aos eleitores afetando sua decisão em participar das eleições. A instituição em questão é a decisão em dois turnos quando nenhum candidato consegue uma maioria simples nas eleições. A literatura mostra que o turnout varia do primeiro turno ao segundo turno [@wright_voter_1989], contudo, ninguém, no meu conhecimento, testou o efeito de existir a possibilidade de um segundo turno no comparecimento. O mecanismo causal para tal proposição, baseia-se no pressuposto de que a probabilidade de o eleitor definir o resultado da eleição é um forte incentivo para o mesmo comparecer às urnas [@downs_economic_1957]. 
+A partir desta concepção surgiram os modelos do eleitor pivotal (pivotal-voter models), ou seja, um eleitor racional só compareceria a urna caso pudesse mudar o resultado da votação. Como a real probabilidade de um eleitor mudar o desfecho da eleição é praticamente nulo, o que de fato influencia é a percepção do eleitor como sendo decisivo [@labbe_st-vincent_experimental_2013]. Esta percepção está correlacionada com a competitividade eleitoral. De fato, um dos achados mais robustos da literatura é que a competição tem um efeito positivo no comparecimento [@blais_what_2006-1]. Porém, em sistemas que adotam votação em dois turnos, eleições competitivas, normalmente, vão ao segundo turno. Por causa disso, o eleitor perderia o sentimento de pivotalidade visto que o resultado não será definido naquele turno, mas sim, em outra eleição. Logo, a hipótese seria que eleições que podem ser definidas no segundo turno tenham um efeito negativo sobre o comparecimento às eleições. Como o efeito dessa instituição está intimamente ligada ao efeito de eleições acirradas, a hipótese principal deste artigo é que o efeito da competição eleitoral em eleições que podem ir ao segundo turno seja neutralizado. 
+Na próxima seção analisarei a literatura sobre os determinantes do turnout. Depois disso, irei expor o mecanismo que dá sentido à relação causal proposta neste artigo. Na quarta seção será apresentado o desenho de pesquisa seguido de outra seção para analisar os resultados do modelo. Por último, uma breve conclusão dos achados.
+
+[^1]: Nota de roda pe
+
+## **Comparecimento Eleitoral na Literatura**
+
+As instituições têm um papel central na explicação do comparecimento as eleições [@blais_what_2006-1]. Elas moldam o comportamento do cidadão a partir de incentivos diversos. Explicar a ação do indivíduo a partir das instituições remonta desde a equação de Plot que mostra que a ação é compreendida pelas normas (instituições) e pela racionalidade. Não apenas para explicar o turnout, mas grande parte dos fenômenos explicados na Ciência Política, giram em torno dos paradigmas institucional e comportamental. Para explicar a participação política, não existe, a meu ver, uma preponderância de um desses pilares sobre o outro. 
+As primeiras pesquisas que tentam explicar os condicionantes que levam ao turnout nas eleições são majoritariamente institucionais. @powell_american_1986 e @jackman_political_1987 acham efeitos de várias instituições sobre o comportamento. O mecanismo que ambos utilizam para explicar tal efeito é que quanto mais transparente e direta for a relação entre quem o eleitor vota e quem de fato assume o poder do governo, maior a probabilidade de o eleitor comparecer às urnas. @powell_american_1986 e [@jackman_voter_1995] ainda vão além, e sugerem que variáveis culturais não importam ou tem um peso ínfimo quando comparado com variáveis institucionais. Powell questiona o porquê do turnout norte-americano ser inferior a países europeus. Segundo o autor, nos Estados Unidos, os cidadãos teriam “atitudes cívicas” superiores, mas ainda assim, comparecem menos às urnas. A conclusão que ele chega é que as instituições americanas geram incentivos para abstenção e que variáveis culturais têm baixo poder explicativo para inferir sobre turnout.
+Mais recentemente, observa-se que outras variáveis, para além das instituições, afetam o comparecimento às eleições. Talvez, por problemas metodológicos, os autores não tenham achado efeito nas variáveis atitudinais. Com a revolução da credibilidade na Ciência Política, métodos mais robustos (experimentos e quase-experimentos) surgem como uma saída para resolver problemas de endogeneidade, causação reversa e variáveis omitidas [@rezende_transformacoes_2015]. @teorell_political_2006 mostra que a participação política é causada basicamente por dois eixos: Recursos e Incentivos. Os recursos vão desde a capacidade individual do cidadão – renda e educação por exemplo – a relações sociais dele, como participar de grupos de ação coletiva. Ele conclui que para mensurar o efeito dessas causas na participação política seria necessário experimentos e dados em painel. [@blais_what_2006-1], em sua revisão da literatura sobre os determinantes do turnout, mostra que fatores socioeconômicos também são variáveis importantes a serem consideradas. Outros estudos vão mais além e sugerem que até mesmo a composição genética de cada indivíduo influencia na decisão de votar [@fowler_genetic_2008].
+A literatura mostra três principais instituições que afetam o turnout: Voto Compulsório [@cepaluni_compulsory_2016], Sistema Eleitoral [@jackman_political_1987; @kostadinova_voter_2003] e Unicameralismo[@a._fornos_explaining_2004; @jackman_voter_1995]. Diferenças institucionais são mais bem observadas em estudos cross-national, contudo, como explicarei com mais detalhes na seção de dados e métodos, este artigo analisa apenas o caso brasileiro. Deste modo, essas instituições são fixas e, por tanto, controladas. Ou seja, o Brasil adota um sistema com voto compulsório, eleições majoritárias para cargos executivos e um sistema bicameral, como isso não varia entre municípios, tais instituições estão controladas. As variáveis socioeconômicas, por sua vez, variam entre municípios e precisam ser controladas.
+A literatura sobre o comparecimento eleitoral sugere que a quantidade de partidos disputando eleições é uma variável importante a ser considerada. A forma mais lógica é que essa relação tenha um efeito positivo. Isto é, quanto maior o leque de opções em uma eleição, maior a probabilidade de os eleitores identificarem-se com um partido ou candidato que disputam as eleições. Dado que há mais candidatos, estes podem focar, mais de perto, no seu eleitorado. Deste modo, não só os eleitores comparecerão pelo fato de existir um candidato que atenda a suas demandas, mas também a mobilização eleitoral será mais abrangente [@blais_what_2006-1]. Apesar de clara, há controversas na literatura sobre essa relação. @jackman_political_1987 propõe uma relação negativa entre quantidade de partidos e comparecimento. Isto porque a teoria institucional mostra que quanto mais difuso for a relação entre o processo eleitoral e quem de fato governa, menor será o turnout. Então, quanto mais partidos concorrendo a eleições, maior a probabilidade de que quem governe seja uma coalizão de partidos ao em vez de um único. Isso torna a relação de quem o candidato vota e quem de fato governará difusa e, portanto, terá um efeito negativo no comparecimento eleitoral.
+Os achados na literatura sobre essa questão são difusos. A maioria dos estudos reportam um efeito negativo de quantidade de partidos sobre o turnout [@blais_what_2006-1; @kostadinova_voter_2003]. Quanto aos trabalhos que utilizam a América Latina como casos, mostram que essa relação não apresenta significância estatística [@perez-linan_neoinstitutional_2001]. 
+A idade do eleitor também é um fator preponderante na literatura [@wolfinger_who_1980]. Há evidências que a relação entre idade e participação é positiva, isto é, quanto maior a idade do indivíduo, maior a probabilidade de o mesmo votar. Essa variável é associada ao efeito de diminuir a idade mínima para votar. Em geral, ao diminuir a idade mínima, o comparecimento eleitoral também sofre declínio [@franklin_voter_2004].  
+A relação entre turnout e variações econômicas também tem um papel preponderante na literatura. Países mais ricos tendem a ter maiores taxas de comparecimento [@a._fornos_explaining_2004; @norris_electoral_2002]. A riqueza está associada a diversas outras variáveis socioeconômicas, como por exemplo, educação. Países economicamente mais avançados apresentam índices de educação mais elevados [@cepaluni_compulsory_2016]. No caso do Brasil, em que os cidadãos são obrigados a votar ou serão punidos, @cepaluni_compulsory_2016 mostram que essa condição não mobiliza os cidadãos de maneira uniforme. Indivíduos economicamente mais ricos, tendem a comparecer com maior frequência em um sistema de voto compulsório, pois as punições – não poder tirar o passaporte ou não pode realizar concursos públicos por exemplo – afetam mais os ricos do que os pobres. 
+O tamanho territorial também é mobilizado pela literatura. Quanto menor a localidade, maior proporção de eleitores participa nas eleições [@eric_oliver_city_2000]. Há três explicações para esse fenômeno. Em regiões menores, a sensação de pivotalidade é maior, isto é, o eleitor sente que seu voto é mais valioso. O segundo fator é que os candidatos, em lugares pequenos, podem mobilizar os eleitores de forma mais eficiente. Por último, as redes sociais entre os moradores de uma comunidade pequena podem ser mais fortes, o que por sua vez geraria uma maior mobilização entre os eleitores [@blais_what_2006-1]. 
+
+## **Discussão Teórica**
+
+A instituição que analiso aqui é eleição em dois turnos. @wright_voter_1989 observa que no primeiro turno os eleitores comparecem mais do que no segundo turno. Essa instituição tem o objetivo de assegurar que o candidato eleito de fato seja o candidato da maioria, mas se os eleitores se abstêm no segundo turno, a escolha seria enviesada. Wright explica esse fenômeno dizendo que no primeiro turno a competição é maior e competição leva ao turnout. No segundo turno as eleições seriam mais previsíveis. Além disso, os eleitores podem não se identificar com os candidatos disponíveis no segundo turno e preferem se abster. Este artigo se diferencia por não comparar a eleição do primeiro turno com a do segundo. Proponho a seguinte questão: qual seria a variação de comparecimento entre eleições de turno único e de dois turnos (no primeiro turno)? Ou seja, minha comparação é entre eleições que tem e que não tem a possibilidade de segundo turno.
+Proponho esta relação pois como @downs_economic_1957 sugere, a probabilidade de o eleitor definir uma eleição é um dos fatores que leva o cidadão a votar. Tendo como pressuposto a escolha racional, isto é, os indivíduos fazem uma relação de custos e benefícios antes de agir, neste caso, de comparecer as eleições, Downs propões a seguinte equação:
+$$
+T = P x B + D – C
+$$
+onde, \(T\) é o turnout, \(P\) é probabilidade de o eleitor ser pivotal (definir o resultado da eleição), \(B\) são os benefícios associados a vitória do seu candidato, \(D\) são os benefícios inerentes ao resultado da eleição e \(C\) são os custos associados a comparecer a votação. Como em uma eleição existem milhares de eleitores, o custo tende a ser maior do que os benefícios, pois a probabilidade de o eleitor modificar a eleição é quase nula. No entanto, se o esperado é que seguindo este cálculo todos os eleitores se abstenham, aquele que votar definirá a eleição, pois seria o único a comparecer, logo, seria também racional votar [@palfrey_laboratory_2009]. Essa relação ficou conhecida como o “paradoxo do voto”, pois, mesmo que os custos excedam os benefícios, a maioria dos eleitores comparecem.
+Nota-se que a probabilidade real de definir o resultado da eleição é praticamente nula, contudo o cidadão não se move pela probabilidade real, mas sim pela crença de que pode afetar o resultado em seu favor [@labbe_st-vincent_experimental_2013]. Os modelos pivotais [@palfrey_strategic_1983] indicam que quanto mais competitiva a eleição, isto é, quanto mais incerto o resultado dela, maior será a crença de que o voto do eleitor é decisivo. Isso indica que essa variável (P) do modelo de Downs – probabilidade de alterar o resultado de uma eleição – é uma causa plausível do turnout.
+De fato, um dos resultados mais robusto da literatura do comparecimento às eleições é que eleições competitivas geram maiores taxas de turnout [@blais_what_2006-1]. Nas palavras de Blais: “O veredito é bastante claro no que desrespeito a competição: encontra-se, em 27 dos 32 estudos que testaram esta relação, que competição aumenta o turnout, em várias configurações diferentes e em diversas metodologias”  [@blais_what_2006-1, pag. 60]. Contudo, esse efeito tende a ser pequeno. [@duffy_beliefs_2006] também mostram que existe uma relação causal entre a crença do cidadão em ser um eleitor pivotal e a probabilidade de ele votar. Utilizando um experimento de laboratório, que dá elevado grau de validade interna, eles mostram que o eleitor, de fato, superestima sua probabilidade de alterar o resultado da eleição, o que, aumenta a chance de ele votar em eleições competitivas onde o resultado não está definido. 
+Tendo em mente que existe um efeito claro entre competição e turnout, e a probabilidade de o eleitor decidir a eleição é um mecanismo causal plausível dessa relação, proponho que eleições em dois turnos tende a mitigar o efeito da competição causando uma queda nos índices de comparecimento. Já que em eleições competitivas, o eleitor se sente motivado a comparecer devido a sua probabilidade de influenciar o resultado, é razoável pensar que, em eleições de dois turnos, no primeiro turno, o eleitor não acredite que possa definir as eleições, mesmo que seja competitiva, pois o resultado será levado ao segundo turno. Quando a votação é decidida em dois turnos, eleições competitivas não são decididas pois o representante só será eleito em um segundo turno. 
+Se não existe competição o eleitor pode pensar: “não comparecerei, pois, a eleição já está decidida, o candidato \(X\) tem a maioria dos votos”. Caso a eleição seja competitiva, ele pode pensar: “não comparecerei, pois, a eleição não será decidida neste turno, os candidatos \(X\) e \(Y\) vão concorrer em outra eleição”. Essa hipótese tem como pressuposto que os eleitores tenham uma noção do resultado da eleição antes que ela ocorra. Isso é plausível pois, no Brasil (caso que analiso), as pesquisas eleitorais são amplamente divulgadas nos noticiários.
+
+## **Dados e Métodos**
+
+Para acessar o efeito das eleições em dois turnos no comparecimento eleitoral, utilizarei o caso brasileiro. Mais especificamente, as eleições municipais para prefeito. Os períodos de análise são as votações de 2000, 2004, 2008, 2012 e 2016. As eleições para cargos executivos no brasil são majoritárias de maioria simples, e, caso nenhum candidato alcance metade mais um dos votos, os dois mais votados concorrem em segundo turno. O que faz do Brasil um caso chave para esta análise é que existe uma variação nos municípios da instituição de eleições em dois turnos. Apenas nos municípios com população superior a 200.000 as eleições podem ir ao segundo turno, nas demais, eleições executivas continuam sendo majoritárias, porém, mesmo que o candidato mais votado não consiga mais de 50% dos votos, ele é eleito. 
+Analisando o caso brasileiro, o modelo fica livre de vieses institucionais, uma vez que todos os municípios estão sobre o mesmo arranjo institucional. Todos os municípios possuem eleições compulsórias, o sistema eleitoral de eleições executivas é majoritário, bicameralismo e a idade mínima para votar é de 18 anos, sendo as idades de 16 e 17 anos opcional.
+As eleições municipais foram escolhidas pois apenas elas podem ser resolvidas obrigatoriamente em um único turno. Como apenas eleições majoritárias podem ir ao segundo turno, a nível municipal, a eleição executiva é para prefeito. Infelizmente, a proporção de municípios com mais e menos de 200.000 habitantes é demasiado desbalanceada. A grande maioria das eleições municipais para prefeito é resolvida impreterivelmente em um único turno.
+Para capturar o efeito das eleições em dois turnos e sua interação com a competição eleitoral no comparecimento utilizei o método de mínimos quadrados (OLS). Como o modelo apresentou heterocedasticidade, utilizei a técnica de erros padrões robustos (robust standard erros) para corrigir esse problema (WHITE 1980). A constatação de que o modelo possui heterocedasticidade está no apêndice metodológico. 
+O modelo utilizado na regressão é o seguinte:
+$$
+COMPARECIMENTO\ = \alpha\ +\ \beta_1TURNO\ +\ \beta_2COMPETIÇÃO\ + 
+$$
+$$
+\beta_3TURNO*COMPETIÇÃO\ +\ \beta_4QTD_CANDIDATOS\ +\ \beta_5LONGEVIDADE\ +\ 
+$$
+$$
+\beta_6RENDA\ +\ \beta_7logTAMANHO\ 
+$$
+A variável dependente é o comparecimento eleitoral. Esta variável foi calculada a partir da proporção entre os eleitores que compareceram às urnas com o total de aptos para cada município. As variáveis independentes principais são o terceiro e quarto termo da equação acima – turno e competição. Turno é uma variável binária que toma o valor 0 caso as eleições sejam de turno único e 1 caso sejam de dois turnos. Já a variável competição varia de 0 a 1, onde 0 é ausência total de competição e 1 competição perfeita. Ela foi calculada da seguinte forma: \(1 – \frac{(votos do primeiro colocado – votos do segundo colocado)}{votos nominais}\). Ou seja, um menos a subtração da proporção de votos do primeiro e segundo colocado da eleição. A variável principal desse modelo é a intercessão das duas, B3 expressa o efeito da competição em eleições de dois turnos. Espera-se que essa variável não seja estatisticamente significante pois a hipótese é a de que eleições em dois turnos mitiguem o efeito da competição no comparecimento eleitoral. 
+As demais variáveis são controles que a literatura mostra exercer efeito sobre o turnout. Utilizei quantidade de candidatos pois a literatura sugere que quanto mais pretendentes ao cargo houver, maior a probabilidade de o eleitor encontrar um candidato que represente suas demandas, o que por sua vez, aumentaria o comparecimento eleitoral. \(\beta_5\) representa o efeito da longevidade no comparecimento. A literatura mostra que quanto mais jovem o indivíduo, menor a probabilidade de ele votar. A renda também é um fator importante que afeta o comparecimento. Quanto mais rico o indivíduo, maiores os custos de se abster. Por último, o tamanho do munícipio deve ter um efeito negativo na variável dependente pois quanto menor a comunidade, maior a mobilização e a sensação de pivotalidade dos eleitores. Foi utilizado uma função logarítmica nessa variável para normalizar os valores que possuem larga magnitude e um alto desvio padrão.
+
+```{r, echo=FALSE}
+var.names <- c("Comparecimento\n(0.87)", "Turno\n(0.01)", "Competição\n(0.84)",
+               "Candidatos\n(2.78)", "Longevidade\n(0.75)", "Renda\n(0.60)")
+mean.vec <- c(0.87, 0.01, 0.84, 2.78, 0.75, 0.60)
+min.vec <- c(0.57, 0, -0.60, 1, 0.54, 0.33)
+max.vec <- c(0.99, 1, 1, 15, 0.89, 0.89)
+sd.vec <- c(0.06, 0.12, 0.16, 1.16, 0.07, 0.09)
+mean.vec.order <- sort(mean.vec, decreasing = TRUE)
+sd.vec.order <- sd.vec[order(mean.vec, decreasing=TRUE)]
+min.vec.order <- min.vec[order(mean.vec, decreasing = TRUE)]
+max.vec.order <- max.vec[order(mean.vec, decreasing = TRUE)]
+var.names.order <- var.names[order(mean.vec, decreasing = TRUE)]
+
+y.axis <- c(6:1)
+
+par(mfrow=c(1,1), mar=c(3,8,1,2))
+plot(mean.vec.order, y.axis, type = "p", pch = 19, xlab="", ylab ="",
+     axes = F, xlim = c(0, 3.1),
+     ylim = c(min(y.axis - .1), max(y.axis + .1)), main = "", cex = .6, yaxs = "i", xaxs = "i")    
+box(bty = "l")
+segments((mean.vec.order - sd.vec.order), y.axis, (mean.vec.order + sd.vec.order), y.axis)
+segments(min.vec.order, y.axis, max.vec.order, y.axis, lty = 2)
+axis(1, at = seq(0,3,by=.5), labels =  seq(0,3,by=.5), tick = T, cex.axis = .7, mgp = c(2,.5,0))
+axis(2, at = y.axis, label = var.names.order, las = 1, tick = T, cex.axis = .7,
+     mgp = c(2,3.2,0), hadj =.5)
+```
+
+
+O gráfico acima mostra as estatísticas descritivas das variáveis do modelo. O N da análise foi de 26.906 observações. A variável Tamanho foi deixada de lado no gráfico pois sua magnitude destoa excessivamente das demais. O tamanho médio de um município no Brasil é de 1455,21 km2 com um máximo com um desvio padrão de 5212,01 km2. Observa-se que a variável Turno possui uma média de 0,01. Isso reflete a grande desproporção da quantidade de municípios que possuem eleições em dois turnos dos que são de turno único. De todas as observações apenas 387 municípios possuem eleição em dois turnos. A quantidade de média de candidatos é aproximadamente 3 por eleição com uma máxima de 15 candidatos. O comparecimento às eleições no Brasil é bastante elevado quando comparado a outros países por causa do voto compulsório. Essa instituição faz com que em média 87% dos eleitores aptos compareçam às urnas no dia de eleição. A competição também apresenta uma média bastante elevada de 0,84 com um mínimo de 0 para os casos que houve apenas um candidato. Longevidade e Renda variam de 0 a 1 e são obtidos respectivamente da esperança de vida ao nascer e da rende per capta. São partes das variáveis que compõem o Índice de Desenvolvimento Humano (IDHM) do Programa das Nações Unidas para o Desenvolvimento (PNUD). 
+Os dados de dimensão eleitoral foram obtidos através do repositório do Tribunal Superior Eleitoral (TSE). Já os dados de dimensões sociodemográficas foram obtidos através do Atlas de Desenvolvimento Humano dos Municípios confeccionados pelo PNUD.
+
+## **Resultados**
+
+Analisamos três modelos. O primeiro com as duas variáveis independentes principais e o termo de interação, o segundo com a variável independente turno e o terceiro com competição como variável explicativa. O gráfico 2 mostra os resultados da OLS simples, sem a correção da heterocedasticidade presente no modelo. Os estimadores com os erros padrões robustos foram idênticos aos da OLS. No apêndice metodológico apresento as tabelas das duas regressões.
+
+```{r, echo = FALSE}
+setwd("C:/Users/kibca/OneDrive/Artigo Análise de Dados/Artigo_Analise_Dados/Dados")
+load("banco.RData")
+banco <- na.omit(banco)
+
+reg1 <- lm(TURNOUT ~ TURNO + QTD_CANDIDATOS + IDHM_L + IDHM_R + LOGTAMANHO,
+           data = banco)
+reg2 <- lm(TURNOUT ~ COMPETICAO + QTD_CANDIDATOS + IDHM_L + IDHM_R + LOGTAMANHO,
+           data = banco)
+reg3 <- lm(TURNOUT ~ TURNO + COMPETICAO + TURNOxCOMPETICAO + QTD_CANDIDATOS + 
+              IDHM_L + IDHM_R + LOGTAMANHO,
+           data = banco)
+plot_summs(reg3, reg1, reg2, model.names = c("Interativo", "Turno", 
+                                             "Competição"), 
+           legend.title = "Modelos")
+```
+
+
+A hipótese de que o comparecimento seria menor em eleições que podem ir ao segundo turno falhou em rejeitar a hipótese nula. A magnitude do efeito foi de aproximadamente 0 e não foi estatisticamente significante. Isto é, nível de comparecimento não muda significativamente na presença da instituição de eleições em dois turnos. Esse resultado não surpreende tanto pois seu efeito é condicional a competição das eleições. Isto é, em eleições pouco competitivas, não importa se existe a possibilidade de ir ao segundo turno, pois assim como na ausência dessa instituição, os eleitores já sabem o desfecho da eleição e não se sentem motivados a votar. 
+Já o efeito da competição eleitoral corrobora os achados da literatura e demonstra ser significante afetando o turnout por volta de 4% nas eleições. Podemos então supor que o mecanismo que atua por trás dessa variável funciona. Isto é, a sensação de pivotalidade aumenta com eleições acirradas e o eleitor se sente motivado a participar na esperança de fazer a diferença nos resultados em favor de seu candidato. 
+A hipótese principal do artigo, por sua vez, foi corroborada, pois quando consideramos como variável explicativa a interação entre competição e eleições em dois turnos, a relação torna-se estatisticamente insignificante com magnitude negativa de aproximadamente -1%. O efeito positivo e significante da competição eleitoral tornou-se nulo e próximo de ser negativo. O mecanismo proposto nesse artigo corrobora com os dados empíricos. Visto que eleições competitivas são resolvidas apenas em outras eleições, isto é, no segundo turno, o fenômeno que acontece em eleições de turno único não competitivas se repete. O eleitor sabe que a probabilidade de ele alterar o desfecho das eleições é mínimo, pois, ainda que acirrada, as eleições irão para o segundo turno. Esse efeito demonstra que o caminho causal – probabilidade de o voto do eleitor ser significativo – que conecta competição eleitoral ao comparecimento é corroborado pelos dados. 
+A quantidade de candidatos foi contrária a expectativa, mostrando que quanto maior a quantidade de candidatos, menor o comparecimento. Como mencionado acima, há trabalhos que mostram essa relação, porém, os autores consideram quantidade de partidos ao em vez de quantidade de candidatos. Em uma perspectiva racional, poderíamos explicar esse resultado com a variável custo de votar no modelo de Downs. O custo de votar também considera as informações que o eleitor precisa ter de todos os candidatos (ou pelo menos dos principais) para poder fazer uma escolha. Quanto maior a lista de candidatos, maior o custo de informação para cada um deles. Isso reflete uma relação negativa entre quantidade de candidato e o comparecimento. 
+Como esperado, Renda foi significante e obteve a maior efeito no comparecimento, com magnitude positiva entre 6% e 7%. O tamanho do município teve um efeito negativo. Isto é, quanto menor o município, maior o comparecimento. Esse resultado também corrobora com os achados na literatura. Por último, longevidade foi insignificante em todos os modelos. 
+
+## **Conclusão**
+
+Esses resultados mostram que os mecanismos que levam o efeito robusto da competição sobre o comparecimento são inválidos quando existe a possibilidade de a eleição ser resolvida em um segundo turno. A competição aumenta o interesse do eleitor, pois quanto mais próximos estão as esperanças da quantidade de votos dos dois candidatos mais fortes, maior a probabilidade de o votante decidir o desfecho da eleição. As magnitudes dos efeitos são muito pequenas pois no Brasil, a presença do voto compulsória aumenta consideravelmente o comparecimento eleitoral e, de certa forma, torna sua variação entre os municípios mais homogênea. 
+O mecanismo proposto pela teoria da escolha racional mostrou-se eficiente na análise. Se o efeito da competição não fosse causado pela sensação do indivíduo de fazer a diferença no resultado da eleição, não faria sentido supor que a competição perderia seu efeito quando existe a possibilidade de a disputa eleitoral ser resolvida em um segundo turno. Não estou afirmando que esse é o único mecanismo presente nessa relação, mas que certamente, este caminho, de fato, faz sentido e está de consonância com os resultados achados nesse artigo.
+Seria interessante, para futuras pesquisas, uma análise do efeito interativo de eleições que podem ser resolvidas em dois turnos e a competição eleitoral no comparecimento em um caso em que o voto não seja compulsório. Deste modo, poderíamos estimar com maior precisão as magnitudes dos efeitos estimados aqui, bem como, observar se o resultado se mantém em diferentes casos com diferentes arranjos institucionais.
+
+
+## **Apêndice Metodológico
+
+Os gráficos A1 ao A6 mostram as distribuições a partir de histogramas de cada variável presente no modelo, exceto pela variável turno que é binária.
+
+```{r, echo=FALSE}
+ggplot(banco, aes(x = TURNOUT)) +
+  geom_histogram()
+
+```
+
+```{r, echo = FALSE}
+ggplot(banco, aes(x = COMPETICAO)) +
+  geom_histogram()
+
+```
+
+```{r, echo = FALSE}
+ggplot(banco, aes(x = QTD_CANDIDATOS)) +
+  geom_histogram()
+```
+
+```{r, echo = FALSE}
+ggplot(banco, aes(x = IDHM_L)) +
+  geom_histogram()
+
+```
+
+```{r, echo = FALSE}
+ggplot(banco, aes(x = IDHM_R)) +
+  geom_histogram()
+```
+
+```{r, echo = FALSE}
+ggplot(banco, aes(x = LOGTAMANHO)) +
+  geom_histogram()
+```
+
+O gráfico A7 mostra a densidade do turnout por eleições de turno único de dois turnos. Isso mostra que grande parte do comparecimento nas eleições de dois turnos estão por volta de 85%. Já as eleições de turno único se distribuem entre 80% e 98% de comparecimento com pico em aproximadamente 85%. Ou seja, a maioria dos casos com mais de 90% de comparecimento são de turno único.
+
+```{r, echo = FALSE}
+banco <- banco %>% mutate(TURNO_CAT = ifelse(TURNO == 1, "Dois Turnos",
+                                             "Um Turno"))
+ggplot(data = banco, mapping = aes(x = TURNOUT, y = ..density..)) + 
+  geom_freqpoly(mapping = aes(colour = TURNO_CAT))
+```
+
+O gráfico A8 mostra uma dispersão de pontos entre competição e comportamento.
+
+```{r, echo = FALSE}
+ggplot(banco, aes(x = COMPETICAO, y = TURNOUT)) +
+  geom_point(alpha = 1 / 100) +
+  coord_cartesian(xlim = c(0,1))
+```
+
+O gráfico A9 mostra a relação forte e positiva de educação e renda. A correlação de Person delas foi de 0,82.
+
+```{r, echo = FALSE}
+ggplot(banco, aes(x = IDHM_E, y = IDHM_R)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+A tabela A1 mostra que a média dos erros da OLS foi 0,00.
+
+```{r}
+residuos <- residuals(reg3)
+preditos <- predict(reg3)
+
+erro <- data.frame (residuos, preditos)
+summary(erro$residuos)
+```
+
+O gráfico A10 mostra que a distribuição dos resíduos se assemelha com a normal porém apresenta calda a esquerda.
+
+```{r, echo = FALSE}
+ggplot(erro, aes(residuos, ..density..)) +
+  geom_density()
+```
+
+O gráfico A11 mostra o qplot da regressão. Observa-se que os dados não se dispõem aleatoriamente entre o 0. O teste de Breusch-Pagan apresentou um p-valor menor que 0,05 o que representa que devemos rejeitar a hipótese nula de homocedasticidade do modelo. Isto é, há heterocedasticidade.
+
+```{r, echo = FALSE}
+qplot(erro$preditos, erro$residuos) +
+  geom_hline(yintercept = 0, colour = 'blue')
+```
+
+```{r}
+bptest(reg3)
+bptest(reg2)
+bptest(reg1)
+```
+
+As tabelas A2 e A3 apresentam respectivamente os resultados da regressão OLS simples, e com erros padrões robustos para resolver o problema da homocedasticidade. Ambos os resultados foram idênticos. 
+
+```{r, echo = FALSE}
+export_summs (reg3, reg1, reg2)
+```
+
+```{r, echo = FALSE}
+reg1.1 <- coeftest(reg1, vcov = vcovHC(reg1, "HC1"))
+reg2.1 <- coeftest(reg2, vcov = vcovHC(reg2, "HC1"))
+reg3.1 <- coeftest(reg3, vcov = vcovHC(reg3, "HC1"))
+
+export_summs(reg3.1, reg1.1, reg2.1)
+```
+
+A fonte utilizada para gerar o a tabela A3 se encontra [neste link](https://rpubs.com/cyobero/187387) 
+
+## **Referências**
